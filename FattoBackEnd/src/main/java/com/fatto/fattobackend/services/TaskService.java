@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class TaskService {
@@ -18,7 +19,7 @@ public class TaskService {
     }
 
     public Task findTaskById(int id) {
-        return taskRepository.findById(id).get();
+        return taskRepository.findById(id).orElseThrow();
     }
 
     public Task saveTask(Task task) {
@@ -45,4 +46,49 @@ public class TaskService {
         op.setDataLimite(updatedTask.getDataLimite());
         return taskRepository.save(op);
     }
+
+    public Task moveTaskUp(Integer id) {
+        Task task = taskRepository.findById(id).orElseThrow();
+
+        if(task.getOrdem() == 1){
+            throw new IllegalArgumentException("Tarefa ja na primeira posição");
+        }
+        else{
+            Task taskAnterior = taskRepository.findByOrdem(task.getOrdem()-1);
+            if(taskAnterior != null ){
+                int pos = task.getOrdem();
+                task.setOrdem(taskAnterior.getOrdem());
+                taskAnterior.setOrdem(pos);
+
+                taskRepository.save(taskAnterior);
+                return taskRepository.save(task);
+            }
+            else{
+                throw new IllegalArgumentException("Erro ao mover a tarefa para cima");
+            }
+        }
+    }
+
+    public Task moveTaskDown(Integer id) {
+        Task task = taskRepository.findById(id).orElseThrow();
+        int maxOrdem = taskRepository.findAllByOrderByOrdemAsc().size();
+        if(task.getOrdem() == maxOrdem){
+            throw new IllegalArgumentException("Já está na ultima posição");
+        }
+        else{
+            Task taskAnterior = taskRepository.findByOrdem(task.getOrdem()+1);
+            if(taskAnterior != null ){
+                int pos = task.getOrdem();
+                task.setOrdem(taskAnterior.getOrdem());
+                taskAnterior.setOrdem(pos);
+
+                taskRepository.save(taskAnterior);
+                return taskRepository.save(task);
+            }
+            else{
+                throw new IllegalArgumentException("Erro ao mover a tarefa para baixo");
+            }
+        }
+    }
+
 }

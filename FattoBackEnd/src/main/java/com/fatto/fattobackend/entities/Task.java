@@ -1,10 +1,7 @@
 package com.fatto.fattobackend.entities;
 
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -21,6 +18,7 @@ public class Task {
     private Integer id;
     private String nome;
     private double custo;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date dataLimite;
     private Integer ordem;
 }
