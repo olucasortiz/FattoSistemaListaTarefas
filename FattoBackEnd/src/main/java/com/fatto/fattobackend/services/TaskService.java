@@ -23,7 +23,7 @@ public class TaskService {
     }
 
     public Task saveTask(Task task) {
-        if(taskRepository.existsByNome(task.getNome())) {
+        if(taskRepository.existsByNome(task     .getNome())) {
             throw new IllegalArgumentException("Nome da tarefa ja existe");
         }
         //taskRepository.setOrdem()
