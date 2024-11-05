@@ -25,7 +25,7 @@ public class TaskService {
 
     public Task saveTask(Task task) {
         int totalTarefas = taskRepository.findAll().size();
-        if(taskRepository.existsByNome(task     .getNome())) {
+        if(taskRepository.existsByNome(task.getNome())) {
             throw new IllegalArgumentException("Nome da tarefa ja existe");
         }
         task.setOrdem(totalTarefas+1);
@@ -59,44 +59,57 @@ public class TaskService {
 
     @Transactional
     public Task moveTaskUp(Integer id) {
-        Task task = taskRepository.findById(id).orElseThrow();
+        Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
 
         if (task.getOrdem() == 1) {
             throw new IllegalArgumentException("Tarefa já está na primeira posição");
-        } else {
-            Task taskAnterior = taskRepository.findByOrdem(task.getOrdem() - 1);
-            if (taskAnterior != null) {
-                int pos = task.getOrdem();
-                task.setOrdem(taskAnterior.getOrdem());
-                taskAnterior.setOrdem(pos);
+        }
 
-                taskRepository.save(taskAnterior);
-                return taskRepository.save(task);
-            } else {
-                throw new IllegalArgumentException("Erro ao mover a tarefa para cima");
-            }
+        int posicaoAtual = task.getOrdem();
+        List<Task> tasksAtSamePosition = taskRepository.findAllByOrdem(posicaoAtual - 1);
+
+        if (tasksAtSamePosition.size() > 1) {
+            throw new IllegalStateException("Conflito de posições: mais de uma tarefa com a mesma ordem");
+        }
+
+        Task taskAnterior = tasksAtSamePosition.isEmpty() ? null : tasksAtSamePosition.get(0);
+
+        if (taskAnterior != null) {
+            task.setOrdem(posicaoAtual - 1);
+            taskAnterior.setOrdem(posicaoAtual);
+            taskRepository.save(taskAnterior);
+            return taskRepository.save(task);
+        } else {
+            throw new IllegalArgumentException("Erro ao mover a tarefa para cima");
         }
     }
 
+
     @Transactional
     public Task moveTaskDown(Integer id) {
-        Task task = taskRepository.findById(id).orElseThrow();
-        int maxOrdem = taskRepository.findAllByOrderByOrdemAsc().size();
+        Task task = taskRepository.findById(id).orElseThrow(() -> new RuntimeException("Tarefa não encontrada"));
+        int maxOrdem = (int) taskRepository.count();
 
         if (task.getOrdem() == maxOrdem) {
             throw new IllegalArgumentException("Tarefa já está na última posição");
-        } else {
-            Task taskPosterior = taskRepository.findByOrdem(task.getOrdem() + 1);
-            if (taskPosterior != null) {
-                int pos = task.getOrdem();
-                task.setOrdem(taskPosterior.getOrdem());
-                taskPosterior.setOrdem(pos);
+        }
 
-                taskRepository.save(taskPosterior);
-                return taskRepository.save(task);
-            } else {
-                throw new IllegalArgumentException("Erro ao mover a tarefa para baixo");
-            }
+        int posicaoAtual = task.getOrdem();
+        List<Task> tasksAtSamePosition = taskRepository.findAllByOrdem(posicaoAtual + 1);
+
+        if (tasksAtSamePosition.size() > 1) {
+            throw new IllegalStateException("Conflito de posições: mais de uma tarefa com a mesma ordem");
+        }
+
+        Task taskPosterior = tasksAtSamePosition.isEmpty() ? null : tasksAtSamePosition.get(0);
+
+        if (taskPosterior != null) {
+            task.setOrdem(posicaoAtual + 1);
+            taskPosterior.setOrdem(posicaoAtual);
+            taskRepository.save(taskPosterior);
+            return taskRepository.save(task);
+        } else {
+            throw new IllegalArgumentException("Erro ao mover a tarefa para baixo");
         }
     }
 
