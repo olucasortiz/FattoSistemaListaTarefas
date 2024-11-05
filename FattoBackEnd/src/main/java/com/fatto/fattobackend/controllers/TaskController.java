@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://127.0.0.1:5500", "*"}) // ou
 @RestController
 @RequestMapping(value = "/task")
 public class TaskController {
@@ -22,6 +22,17 @@ public class TaskController {
         Task createdTask = taskService.saveTask(task);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTask);
     }
+
+    @GetMapping(value = "/{id}")
+    public ResponseEntity<Task> getTaskById(@PathVariable Integer id) {
+        try {
+            Task task = taskService.findTaskById(id);
+            return ResponseEntity.ok().body(task);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
 
     @GetMapping
     public ResponseEntity<List<Task>> getAllTasks() {
@@ -63,6 +74,13 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
     }
+
+    @PostMapping("/reorder")
+    public ResponseEntity<Void> reorderTasks(@RequestBody List<Task> reorderedTasks) {
+        taskService.reorderTasks(reorderedTasks);
+        return ResponseEntity.ok().build();
+    }
+
 
     @PatchMapping(value = "{id}/mover-baixo")
     public ResponseEntity<Task> moveTaskDown(@PathVariable Integer id) {

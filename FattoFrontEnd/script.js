@@ -1,4 +1,5 @@
 const baseUrl = "http://localhost:8080/task";
+let editingTaskId = null;
 
 function showAddTaskForm() {
     document.getElementById("addTaskForm").classList.remove("d-none");
@@ -11,10 +12,11 @@ function hideAddTaskForm() {
 async function addTask(event) {
     event.preventDefault();
     const name = document.getElementById("taskName").value;
-    const description = document.getElementById("taskDescription").value;
-    
-    if (name && description) {
-        const task = { name, description };
+    const custo = document.getElementById("taskCusto").value;
+    const dataLimite = document.getElementById("taskDataLimite").value;
+
+    if (name && custo && dataLimite) {
+        const task = { nome: name, custo: parseFloat(custo), dataLimite };
 
         try {
             const response = await fetch(baseUrl, {
@@ -26,7 +28,7 @@ async function addTask(event) {
             if (response.ok) {
                 alert("Tarefa adicionada com sucesso!");
                 hideAddTaskForm();
-                loadTasks(); // Recarrega a lista de tarefas
+                loadTasks();
             } else {
                 alert("Erro ao adicionar tarefa.");
             }
@@ -54,53 +56,74 @@ async function loadTasks() {
 
 function displayTasks(tasks) {
     const taskTableBody = document.getElementById("taskTableBody");
-    taskTableBody.innerHTML = ""; // Limpa o conteúdo atual da tabela
+    taskTableBody.innerHTML = "";
 
-    tasks.forEach(task => {
+    tasks.forEach((task) => {
         const row = document.createElement("tr");
+
+        const custoClass = task.custo > 1000 ? "highlight-custo" : "";
+        const formattedDate = task.dataLimite ? new Date(task.dataLimite).toLocaleDateString("pt-BR") : '';
 
         row.innerHTML = `
             <td>${task.id}</td>
-            <td>${task.name}</td>
-            <td>${task.description}</td>
-            <td>${task.position}</td>
+            <td>${task.nome}</td>
+            <td class="${custoClass}">${task.custo}</td>
+            <td>${formattedDate}</td>
             <td>
-                <button class="btn btn-warning btn-sm" onclick="editTask(${task.id})">Editar</button>
-                <button class="btn btn-danger btn-sm" onclick="deleteTask(${task.id})">Excluir</button>
-                <button class="btn btn-secondary btn-sm" onclick="moveTaskUp(${task.id})">↑</button>
-                <button class="btn btn-secondary btn-sm" onclick="moveTaskDown(${task.id})">↓</button>
+                <button class="btn btn-warning" onclick="openEditTaskModal(${task.id})">Editar</button>
+                <button class="btn btn-danger" onclick="deleteTask(${task.id})">Excluir</button>
+                <button class="btn btn-secondary" onclick="moveTaskUp(${task.id})">↑</button>
+                <button class="btn btn-secondary" onclick="moveTaskDown(${task.id})">↓</button>
             </td>
         `;
-
         taskTableBody.appendChild(row);
     });
 }
 
-async function editTask(id) {
-    const name = prompt("Digite o novo nome da tarefa:");
-    const description = prompt("Digite a nova descrição da tarefa:");
-    
-    if (name && description) {
-        const task = { name, description };
 
-        try {
-            const response = await fetch(`${baseUrl}/${id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(task)
-            });
+async function openEditTaskModal(taskId) {
+    try {
+        const response = await fetch(`${baseUrl}/${taskId}`);
+        if (response.ok) {
+            const task = await response.json();
+            editingTaskId = task.id;
+            document.getElementById("editTaskName").value = task.nome;
+            document.getElementById("editTaskCusto").value = task.custo;
+            document.getElementById("editTaskDataLimite").value = task.dataLimite ? task.dataLimite.split('T')[0] : '';
 
-            if (response.ok) {
-                alert("Tarefa atualizada com sucesso!");
-                loadTasks();
-            } else {
-                alert("Erro ao atualizar tarefa.");
-            }
-        } catch (error) {
-            console.error("Erro ao atualizar tarefa:", error);
+            $('#editTaskModal').modal('show');
+        } else {
+            alert("Erro ao carregar a tarefa para edição.");
         }
-    } else {
-        alert("Por favor, preencha todos os campos.");
+    } catch (error) {
+        console.error("Erro ao abrir o modal de edição:", error);
+    }
+}
+
+
+async function saveTaskChanges() {
+    const updatedTask = {
+        nome: document.getElementById("editTaskName").value,
+        custo: parseFloat(document.getElementById("editTaskCusto").value),
+        dataLimite: document.getElementById("editTaskDataLimite").value
+    };
+
+    try {
+        const response = await fetch(`${baseUrl}/${editingTaskId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(updatedTask)
+        });
+
+        if (response.ok) {
+            alert("Tarefa atualizada com sucesso!");
+            $('#editTaskModal').modal('hide');
+            loadTasks();
+        } else {
+            alert("Erro ao atualizar tarefa.");
+        }
+    } catch (error) {
+        console.error("Erro ao atualizar tarefa:", error);
     }
 }
 
@@ -128,11 +151,10 @@ async function moveTaskUp(id) {
         const response = await fetch(`${baseUrl}/${id}/mover-cima`, {
             method: "PATCH"
         });
-
         if (response.ok) {
-            alert("Tarefa movida para cima!");
             loadTasks();
         } else {
+            console.error("Erro ao mover tarefa para cima", response.statusText);
             alert("Erro ao mover tarefa para cima.");
         }
     } catch (error) {
@@ -145,11 +167,10 @@ async function moveTaskDown(id) {
         const response = await fetch(`${baseUrl}/${id}/mover-baixo`, {
             method: "PATCH"
         });
-
         if (response.ok) {
-            alert("Tarefa movida para baixo!");
             loadTasks();
         } else {
+            console.error("Erro ao mover tarefa para baixo", response.statusText);
             alert("Erro ao mover tarefa para baixo.");
         }
     } catch (error) {
