@@ -24,10 +24,11 @@ public class TaskService {
     }
 
     public Task saveTask(Task task) {
+        int totalTarefas = taskRepository.findAll().size();
         if(taskRepository.existsByNome(task     .getNome())) {
             throw new IllegalArgumentException("Nome da tarefa ja existe");
         }
-        //taskRepository.setOrdem()
+        task.setOrdem(totalTarefas+1);
         return taskRepository.save(task);
     }
 

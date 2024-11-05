@@ -69,6 +69,7 @@ function displayTasks(tasks) {
             <td>${task.nome}</td>
             <td class="${custoClass}">${task.custo}</td>
             <td>${formattedDate}</td>
+            <td>${task.ordem}</td>
             <td>
                 <button class="btn btn-warning" onclick="openEditTaskModal(${task.id})">Editar</button>
                 <button class="btn btn-danger" onclick="deleteTask(${task.id})">Excluir</button>
@@ -79,7 +80,6 @@ function displayTasks(tasks) {
         taskTableBody.appendChild(row);
     });
 }
-
 
 async function openEditTaskModal(taskId) {
     try {
@@ -99,7 +99,6 @@ async function openEditTaskModal(taskId) {
         console.error("Erro ao abrir o modal de edição:", error);
     }
 }
-
 
 async function saveTaskChanges() {
     const updatedTask = {
@@ -128,7 +127,8 @@ async function saveTaskChanges() {
 }
 
 async function deleteTask(id) {
-    if (confirm("Tem certeza que deseja excluir esta tarefa?")) {
+    const userConfirmed = confirm("Tem certeza que deseja excluir esta tarefa?");
+    if (userConfirmed) {
         try {
             const response = await fetch(`${baseUrl}/${id}`, {
                 method: "DELETE"

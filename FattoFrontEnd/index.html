@@ -6,13 +6,12 @@
     <title>Lista de Tarefas</title>
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet">
-    <link href="style.css" rel="stylesheet">
 </head>
 <body>
 
 <div class="container mt-4">
     <h1 class="text-center">Lista de Tarefas</h1>
-    <button class="btn btn-primary mb-3" onclick="showAddTaskForm()">Adicionar Tarefa</button>
+    <button class="btn btn-primary mb-3" onclick="showAddTaskModal()">Adicionar Tarefa</button>
 
     <table class="table table-striped table-bordered">
         <thead>
@@ -28,25 +27,35 @@
         <tbody id="taskTableBody">
         </tbody>
     </table>
-
-    <div id="addTaskForm" class="mt-4 d-none">
-        <h2>Adicionar Tarefa</h2>
-        <form onsubmit="addTask(event)">
-            <div class="form-group">
-                <label for="taskName">Nome:</label>
-                <input type="text" class="form-control" id="taskName" required>
+    <div class="modal fade" id="addTaskModal" tabindex="-1" role="dialog" aria-labelledby="addTaskModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addTaskModalLabel">Adicionar Tarefa</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="addTaskForm" onsubmit="addTask(event)">
+                        <div class="form-group">
+                            <label for="addTaskName">Nome:</label>
+                            <input type="text" class="form-control" id="addTaskName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addTaskCusto">Custo:</label>
+                            <input type="number" class="form-control" id="addTaskCusto" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="addTaskDataLimite">Data Limite:</label>
+                            <input type="date" class="form-control" id="addTaskDataLimite" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Salvar</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                    </form>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="taskCusto">Custo:</label>
-                <input type="number" class="form-control" id="taskCusto" required>
-            </div>
-            <div class="form-group">
-                <label for="taskDataLimite">Data Limite:</label>
-                <input type="date" class="form-control" id="taskDataLimite" required>
-            </div>
-            <button type="submit" class="btn btn-success">Salvar</button>
-            <button type="button" class="btn btn-secondary" onclick="hideAddTaskForm()">Cancelar</button>
-        </form>
+        </div>
     </div>
 
     <div class="modal fade" id="editTaskModal" tabindex="-1" role="dialog" aria-labelledby="editTaskModalLabel" aria-hidden="true">
@@ -59,7 +68,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form id="editTaskForm">
+                    <form id="editTaskForm" onsubmit="saveTaskChanges(event)">
                         <div class="form-group">
                             <label for="editTaskName">Nome da tarefa:</label>
                             <input type="text" class="form-control" id="editTaskName" required>
@@ -72,7 +81,7 @@
                             <label for="editTaskDataLimite">Data Limite:</label>
                             <input type="date" class="form-control" id="editTaskDataLimite" required>
                         </div>  
-                        <button type="button" class="btn btn-primary" onclick="saveTaskChanges()">Salvar</button>
+                        <button type="submit" class="btn btn-primary">Salvar</button>
                     </form>
                 </div>                
             </div>
