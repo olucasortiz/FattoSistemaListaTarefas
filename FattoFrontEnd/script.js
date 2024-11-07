@@ -1,4 +1,4 @@
-const baseUrl = "http://localhost:8080/task";
+const baseUrl = 'https://fatto-backend-482931352648.us-central1.run.app/task';
 let editingTaskId = null;
 
 
@@ -14,7 +14,7 @@ function hideAddTaskForm() {
 async function addTaskModal(event) {
     event.preventDefault();
     
-    // Corrigido para usar os IDs corretos do modal
+
     const name = document.getElementById("addTaskName").value;
     const custo = document.getElementById("addTaskCusto").value;
     const dataLimite = document.getElementById("addTaskDataLimite").value;

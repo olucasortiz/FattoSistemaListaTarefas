@@ -1,15 +1,11 @@
-FROM maven:3.9.9-eclipse-temurin-21 AS build
+# Use a imagem base do OpenJDK
+FROM openjdk:22-jdk-slim
 
-WORKDIR /app
+# Adicione o arquivo JAR ao contêiner
+COPY target/FattoBackEnd-0.0.1-SNAPSHOT.jar app.jar
 
-COPY . .
+# Exponha a porta que a aplicação usará
+EXPOSE 8080
 
-RUN mvn clean install -DskipTests
-
-FROM eclipse-temurin:21-jre
-
-WORKDIR /app
-
-COPY --from=build /app/target/*.jar app.jar
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Comando para executar a aplicação
+ENTRYPOINT ["java", "-jar", "/app.jar"]
